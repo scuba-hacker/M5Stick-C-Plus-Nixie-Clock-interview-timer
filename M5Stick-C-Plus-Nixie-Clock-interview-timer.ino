@@ -26,7 +26,7 @@ Button* p_secondButton = NULL;
 
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 0;        // timezone offset
-int   daylightOffset_sec = 0;   // DST offset
+int   daylightOffset_sec = 3600;   // DST offset
 
 RTC_TimeTypeDef RTC_TimeStruct;
 RTC_DateTypeDef RTC_DateStruct;
@@ -57,6 +57,8 @@ void resetClock();
 
 void resetCountDownTimer();
 void resetCountUpTimer();
+
+const bool enableShutdownOnNoUSB = false;
 
 const float minimumUSBVoltage=2.0;
 long USBVoltageDropTime=0;
@@ -347,7 +349,8 @@ bool checkButtons()
 
 void loop(void)
 { 
-  shutdownIfUSBPowerOff();
+  if (enableShutdownOnNoUSB)
+    shutdownIfUSBPowerOff();
 
   if ( mode_ == 4) { vfd_4_line_countdown(countdownFrom);}   // mm,ss, optional dd mm
   if ( mode_ == 3 ){ vfd_3_line_clock();}   // hh,mm,ss, optional dd mm
