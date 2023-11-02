@@ -26,7 +26,7 @@ Button* p_secondButton = NULL;
 
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 0;        // timezone offset
-int   daylightOffset_sec = 3600;   // DST offset
+int   daylightOffset_sec = 0;
 
 RTC_TimeTypeDef RTC_TimeStruct;
 RTC_DateTypeDef RTC_DateStruct;
@@ -45,7 +45,7 @@ const char *monthName[12] = {
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
 };
 
-const int defaultBrightness = 15;
+const int defaultBrightness = 100;
 
 int countdownFrom=59;
 bool haltCountdown=false;
@@ -142,7 +142,7 @@ void  initialiseRTCfromNTP()
       DateStruct.Date = timeinfo.tm_mday;
       DateStruct.Year = timeinfo.tm_year+1900;
       DateStruct.WeekDay = timeinfo.tm_wday;
-      M5.Rtc.SetData(&DateStruct);    
+      M5.Rtc.SetDate(&DateStruct);    
       if (daylightOffset_sec == 0)
         M5.Lcd.println("\n RTC to GMT");
       else
@@ -209,7 +209,7 @@ void setup()
 
   M5.Lcd.setRotation(1);
   M5.Lcd.setTextSize(2);
-  M5.Axp.ScreenBreath(defaultBrightness);             // 7-15
+  M5.Axp.ScreenBreath(defaultBrightness);
   
   Serial.begin(115200);
 
@@ -261,20 +261,20 @@ void resetClock()
   DateStruct.Date = timeinfo.tm_mday;
   DateStruct.Year = timeinfo.tm_year+1900;
   DateStruct.WeekDay = timeinfo.tm_wday;
-  M5.Rtc.SetData(&DateStruct);    
+  M5.Rtc.SetDate(&DateStruct);    
 
   mode_ = 3; // change back to 3
 }
 
 void fadeToBlackAndShutdown()
 {
-  for (int i=14; i>6; i--)
+  for (int i = 90; i > 0; i=i-15)
   {
-    M5.Axp.ScreenBreath(i);             // 7-14 fade to black
+    M5.Axp.ScreenBreath(i);             // fade to black
     delay(100);
   }
 
-  M5.Axp.PowerOff(); 
+  M5.Axp.PowerOff();
 }
 
 bool checkButtons()
@@ -371,7 +371,7 @@ void vfd_4_line_countdown(const int countdownFrom){ // Countdown mode, minutes, 
   if (!haltCountdown)
   {
     M5.Rtc.GetTime(&RTC_TimeStruct);
-    M5.Rtc.GetData(&RTC_DateStruct);
+    M5.Rtc.GetDate(&RTC_DateStruct);
     int minutesRemaining = countdownFrom - RTC_TimeStruct.Minutes;
     int secondsRemaining = 59 - RTC_TimeStruct.Seconds;
         
@@ -408,7 +408,7 @@ void vfd_4_line_countdown(const int countdownFrom){ // Countdown mode, minutes, 
  
 void vfd_3_line_clock(){    // Clock mode - Hours, mins, secs with optional date
   M5.Rtc.GetTime(&RTC_TimeStruct);
-  M5.Rtc.GetData(&RTC_DateStruct);
+  M5.Rtc.GetDate(&RTC_DateStruct);
   int h1 = int(RTC_TimeStruct.Hours / 10 );
   int h2 = int(RTC_TimeStruct.Hours - h1*10 );
   int i1 = int(RTC_TimeStruct.Minutes / 10 );
@@ -441,7 +441,7 @@ void vfd_3_line_clock(){    // Clock mode - Hours, mins, secs with optional date
  
 void vfd_1_line_countup(){  // Timer Mode - Minutes and Seconds, with optional date
   M5.Rtc.GetTime(&RTC_TimeStruct);
-  M5.Rtc.GetData(&RTC_DateStruct);
+  M5.Rtc.GetDate(&RTC_DateStruct);
   int i1 = int(RTC_TimeStruct.Minutes / 10 );
   int i2 = int(RTC_TimeStruct.Minutes - i1*10 );
   int s1 = int(RTC_TimeStruct.Seconds / 10 );
@@ -476,21 +476,14 @@ void drawDate()
 }
 
 void fade(){
-  for (int i=7;i<16;i++){M5.Axp.ScreenBreath(i);delay(25);}
-  for (int i=15;i>7;i--){M5.Axp.ScreenBreath(i);delay(25);}
-//  M5.Axp.ScreenBreath(12);
-  M5.Axp.ScreenBreath(defaultBrightness);             // 7-15
+  for (int i=0;i<100;i=i+15){M5.Axp.ScreenBreath(i);delay(25);}
+  for (int i=100;i>0;i=i-15){M5.Axp.ScreenBreath(i);delay(25);}
+  M5.Axp.ScreenBreath(defaultBrightness);
 }
-
-
-
-
-
-
 
 void vfd_2_line(){      // Unused mode - full date and time with year.
   M5.Rtc.GetTime(&RTC_TimeStruct);
-  M5.Rtc.GetData(&RTC_DateStruct);
+  M5.Rtc.GetDate(&RTC_DateStruct);
   //Serial.printf("Data: %04d-%02d-%02d\n",RTC_DateStruct.Year,RTC_DateStruct.Month,RTC_DateStruct.Date);
   //Serial.printf("Week: %d\n",RTC_DateStruct.WeekDay);
   //Serial.printf("Time: %02d : %02d : %02d\n",RTC_TimeStruct.Hours,RTC_TimeStruct.Minutes,RTC_TimeStruct.Seconds);
